@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Neuro AI — Конструктор сайтов</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F3EE;--bg2:#EDEAE4;--w:#fff;
+  --ink:#18160F;--ink2:#4A4740;--ink3:#8A877F;--ink4:#B5B2AB;
+  --a:#1B6B3A;--al:rgba(27,107,58,0.06);--am:#22884A;--ad:#145A2E;
+  --bd:rgba(24,22,15,0.08);--bd2:rgba(24,22,15,0.14);
+  --danger:#C23A3A;--dangerL:rgba(194,58,58,0.08);
+  --serif:'Instrument Serif',Georgia,serif;
+  --sans:'Manrope',system-ui,sans-serif;
+  --r:10px;--r2:14px;
+  --shadow2:0 4px 20px rgba(0,0,0,0.08),0 1px 3px rgba(0,0,0,0.06);
+}
+html,body{margin:0;padding:0;height:100%;height:100dvh;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;position:fixed;inset:0}
+
+.topbar{height:56px;min-height:56px;flex-shrink:0;background:var(--w);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+.logo{font-family:var(--serif);font-size:22px;display:flex;align-items:baseline;gap:4px}
+.logo-dot{width:7px;height:7px;background:var(--a);border-radius:50%;display:inline-block}
+.logo sup{font-family:var(--sans);font-size:8px;color:var(--a);font-weight:800;letter-spacing:2.5px;vertical-align:super;margin-left:1px}
+.tbar-right{display:flex;gap:8px;align-items:center}
+.tb{background:transparent;border:1.5px solid var(--bd2);border-radius:8px;padding:7px 15px;font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .2s}
+.tb:hover{border-color:var(--ink3);color:var(--ink)}
+.tb.green{background:var(--a);border-color:var(--a);color:#fff}
+.tb.green:hover{background:var(--am);border-color:var(--am)}
+.tb.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.tb.dark:hover{background:var(--a);border-color:var(--a)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--ink4);transition:all .3s}
+.sdot.on{background:var(--am);box-shadow:0 0 8px rgba(34,136,74,0.4)}
+.slbl{font-size:11px;color:var(--ink3);font-weight:500}
+
+.main{flex:1 1 0%;min-height:0;display:grid;grid-template-columns:400px 1fr;overflow:hidden}
+
+/* Chat panel */
+.cpanel{display:flex;flex-direction:column;background:var(--w);border-right:1px solid var(--bd);min-height:0;overflow:hidden}
+.chead{padding:16px 20px;border-bottom:1px solid var(--bd);flex:0 0 auto}
+.chead-title{font-family:var(--serif);font-size:18px;margin-bottom:3px}
+.chead-sub{font-size:11px;color:var(--ink3);font-weight:500}
+.cmsgs-wrap{flex:1 1 0%;position:relative;overflow:hidden;min-height:0}
+.cmsgs{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px;display:flex;flex-direction:column;gap:12px}
+.cmsgs::-webkit-scrollbar{width:3px}
+.cmsgs::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+.cinp{padding:12px 16px;border-top:1px solid var(--bd);flex:0 0 auto;background:var(--w)}
+.cinp-row{display:flex;gap:8px;align-items:flex-end}
+.ctxt{flex:1;background:var(--bg);border:1.5px solid var(--bd);color:var(--ink);font-family:var(--sans);font-size:13px;padding:10px 14px;border-radius:var(--r);outline:none;resize:none;min-height:44px;max-height:100px;line-height:1.5;transition:all .2s}
+.ctxt:focus{border-color:var(--a);background:#fff;box-shadow:0 0 0 3px rgba(27,107,58,0.06)}
+.ctxt::placeholder{color:var(--ink4)}
+.sbtn{width:40px;height:40px;background:var(--ink);border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.sbtn:hover{background:var(--a)}
+.sbtn:disabled{opacity:.35;cursor:not-allowed}
+.sbtn svg{width:15px;height:15px;fill:#fff}
+.ihint{font-size:10px;color:var(--ink4);margin-top:5px;text-align:center}
+
+/* Messages */
+.msg{display:flex;gap:9px;animation:msgIn .3s cubic-bezier(0.22,1,0.36,1);flex-shrink:0}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg.user{flex-direction:row-reverse}
+.mav{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-top:2px}
+.msg.ai .mav{background:var(--ink);color:#fff}
+.msg.user .mav{background:var(--a);color:#fff}
+.mb{max-width:85%;padding:10px 14px;border-radius:var(--r2);font-size:13px;line-height:1.65}
+.msg.ai .mb{background:var(--bg);border:1px solid var(--bd);border-radius:4px var(--r2) var(--r2) var(--r2)}
+.msg.user .mb{background:var(--ink);color:#fff;border-radius:var(--r2) 4px var(--r2) var(--r2)}
+.mb strong{font-weight:700}
+.typing{display:flex;gap:4px;padding:4px 0}
+.typing span{width:6px;height:6px;background:var(--ink3);border-radius:50%;animation:typDot 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes typDot{0%,60%,100%{opacity:.3;transform:scale(.8)}30%{opacity:1;transform:scale(1)}}
+
+/* Chips */
+.opts{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.opt{padding:6px 13px;border:1.5px solid var(--bd2);border-radius:99px;font-size:11.5px;font-weight:600;color:var(--ink2);cursor:pointer;background:#fff;transition:all .18s;font-family:var(--sans)}
+.opt:hover{border-color:var(--a);color:var(--a);background:var(--al)}
+.opt.sel{border-color:var(--a);background:rgba(27,107,58,0.1);color:var(--ad);pointer-events:none}
+
+/* Photo upload */
+.cup{border:2px dashed var(--bd2);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);position:relative;margin-top:8px}
+.cup:hover{border-color:var(--a);background:var(--al)}
+.cup input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.pthumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pthumb{width:56px;height:56px;border-radius:6px;object-fit:cover;border:1.5px solid var(--bd)}
+
+/* Preview panel */
+.ppanel{display:flex;flex-direction:column;background:var(--bg);min-height:0;overflow:hidden}
+.pbar{height:44px;min-height:44px;flex:0 0 auto;background:var(--w);border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px;padding:0 16px}
+.pdots{display:flex;gap:5px}
+.pdot{width:10px;height:10px;border-radius:50%}
+.purlbar{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--ink3);text-align:center;font-family:var(--sans);font-weight:500}
+.pbtns{display:flex;gap:6px}
+.pb{background:transparent;border:1.5px solid var(--bd2);border-radius:6px;padding:4px 12px;font-family:var(--sans);font-size:11px;font-weight:600;cursor:pointer;color:var(--ink2);transition:all .2s;white-space:nowrap}
+.pb:hover{border-color:var(--ink3);color:var(--ink)}
+.pb.ea{background:var(--a);border-color:var(--a);color:#fff}
+.parea-wrap{flex:1 1 0%;position:relative;overflow:hidden;min-height:0}
+.parea{position:absolute;inset:0;overflow-y:auto;background:#fff}
+.parea::-webkit-scrollbar{width:3px}
+.parea::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+/* Empty / Progress */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center;color:var(--ink3)}
+.empty-icon{font-size:44px;margin-bottom:18px;opacity:.15}
+.empty-t{font-family:var(--serif);font-size:24px;color:var(--ink2);margin-bottom:8px;font-style:italic}
+.empty-s{font-size:12.5px;line-height:1.7;max-width:260px}
+.gen-progress{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:40px;text-align:center}
+.gen-spinner{width:40px;height:40px;border:2.5px solid rgba(27,107,58,0.15);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite;margin-bottom:20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-title{font-family:var(--serif);font-size:20px;color:var(--ink);margin-bottom:6px}
+.gen-sub{font-size:12px;color:var(--ink3);max-width:240px;line-height:1.6}
+.gen-steps{margin-top:20px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.gen-step{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink3);transition:all .3s}
+.gen-step.active{color:var(--a);font-weight:600}
+.gen-step.done{color:var(--am)}
+.gen-step-dot{width:6px;height:6px;border-radius:50%;background:var(--ink4);flex-shrink:0;transition:all .3s}
+.gen-step.active .gen-step-dot{background:var(--a);box-shadow:0 0 6px rgba(27,107,58,0.4)}
+.gen-step.done .gen-step-dot{background:var(--am)}
+
+/* Editor */
+#sr{width:100%;min-height:100%}
+#eltb{position:fixed;bottom:20px;left:calc(400px + 50%);transform:translateX(-50%);background:var(--ink);border-radius:var(--r2);padding:6px 10px;display:none;align-items:center;gap:4px;z-index:9999;box-shadow:var(--shadow2)}
+.eb{background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:11px;font-weight:600;font-family:var(--sans);transition:all .15s;white-space:nowrap}
+.eb:hover{background:rgba(255,255,255,0.18)}
+.eb.rd{background:rgba(194,58,58,0.3)}.eb.rd:hover{background:rgba(194,58,58,0.5)}
+.esep{width:1px;height:20px;background:rgba(255,255,255,0.12);margin:0 3px}
+#eprops{position:fixed;right:16px;top:72px;background:#fff;border:1px solid var(--bd);border-radius:var(--r2);padding:14px;width:195px;z-index:9998;box-shadow:var(--shadow2);font-family:var(--sans);font-size:12px;display:none}
+#eprops label{display:block;color:var(--ink3);margin-top:7px;margin-bottom:3px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+#eprops input[type=range]{width:100%;accent-color:var(--a)}
+#eprops input[type=color]{width:100%;height:28px;border-radius:5px;border:1px solid var(--bd);cursor:pointer}
+.edit-mode [data-editable]:hover{outline:2px dashed rgba(27,107,58,0.35);outline-offset:3px;cursor:text}
+.edit-mode [data-editable]:focus{outline:2px solid var(--a);outline-offset:3px}
+[data-nel].sel{outline:2px solid var(--a)!important;outline-offset:3px}
+.sdh{position:absolute;left:6px;top:10px;width:24px;height:24px;background:rgba(27,107,58,0.9);color:#fff;border-radius:5px;cursor:grab;opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center;font-size:14px;z-index:500;user-select:none}
+
+/* Mode badge */
+.mode-badge{font-size:9px;padding:3px 8px;border-radius:99px;font-weight:700;letter-spacing:.5px}
+.mode-badge.cloud{background:rgba(27,107,58,0.1);color:var(--a)}
+.mode-badge.local{background:rgba(194,150,58,0.1);color:#92400E}
+
+/* Key screen */
+.keyscreen{padding:20px 4px}
+.ks-tabs{display:flex;gap:0;margin-bottom:16px;border:1.5px solid var(--bd2);border-radius:var(--r);overflow:hidden}
+.ks-tab{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;background:var(--bg);color:var(--ink3);transition:all .2s;font-family:var(--sans)}
+.ks-tab.active{background:var(--w);color:var(--ink)}
+.ks-pane{display:none}.ks-pane.active{display:block}
+.ks-warn{background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:var(--r);padding:14px;margin-bottom:14px;font-size:12px;color:#92400E;line-height:1.7}
+.ks-warn strong{display:block;margin-bottom:5px;font-size:13px}
+.ks-ok{background:rgba(27,107,58,0.06);border:1.5px solid rgba(27,107,58,0.2);border-radius:var(--r);padding:14px;margin-bottom:14px;font-size:12px;color:var(--ad);line-height:1.7}
+.ks-ok strong{display:block;margin-bottom:5px;font-size:13px}
+.ks-inp{width:100%;background:var(--w);border:1.5px solid var(--bd2);color:var(--ink);font-family:monospace;font-size:12px;padding:11px 14px;border-radius:var(--r);outline:none;margin-bottom:10px;transition:all .2s}
+.ks-inp:focus{border-color:var(--a);box-shadow:0 0 0 3px rgba(27,107,58,0.06)}
+.ks-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:var(--r);padding:12px;font-family:var(--sans);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.ks-btn:hover{background:var(--a)}
+.ks-note{font-size:10px;color:var(--ink4);margin-top:8px;text-align:center}
+
+@media(max-width:860px){.main{grid-template-columns:1fr}.ppanel{display:none}#eltb{left:50%}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><span class="logo-dot"></span> Neuro<sup>AI</sup></div>
+  <div class="tbar-right">
+    <div class="sdot" id="sdot"></div>
+    <span class="slbl" id="slbl">Готов</span>
+    <span class="mode-badge" id="modeBadge"></span>
+    <button class="tb" onclick="showKeyScreen()">⚙ Настройки</button>
+    <button class="tb dark" id="editBtn" onclick="toggleEdit()" style="display:none">✎ Редактировать</button>
+    <button class="tb green" id="saveBtn" onclick="saveSite()" style="display:none">↓ Сохранить</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="cpanel">
+    <div class="chead">
+      <div class="chead-title">AI‑дизайнер</div>
+      <div class="chead-sub" id="chsub">Опишите ваш бизнес</div>
+    </div>
+    <div class="cmsgs-wrap"><div class="cmsgs" id="cmsgs"></div></div>
+    <div class="cinp">
+      <div class="cinp-row">
+        <textarea class="ctxt" id="ctxt" placeholder="Напишите о вашем бизнесе..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();doSend()}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+        <button class="sbtn" id="sbtn" onclick="doSend()"><svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></button>
+      </div>
+      <div class="ihint">Enter — отправить · Shift+Enter — перенос</div>
+    </div>
+  </div>
+  <div class="ppanel">
+    <div class="pbar">
+      <div class="pdots"><div class="pdot" style="background:#FF5F57"></div><div class="pdot" style="background:#FEBC2E"></div><div class="pdot" style="background:#28C840"></div></div>
+      <div class="purlbar" id="urlbar">neuro.site</div>
+      <div class="pbtns"><button class="pb" id="peditBtn" onclick="toggleEdit()" style="display:none">✎ Редактировать</button></div>
+    </div>
+    <div class="parea-wrap"><div class="parea" id="parea">
+      <div class="empty"><div class="empty-icon">✦</div><div class="empty-t">Здесь появится сайт</div><div class="empty-s">Расскажите AI-дизайнеру о бизнесе — он создаст уникальный сайт</div></div>
+    </div></div>
+  </div>
+</div>
+
+<div id="eltb">
+  <button class="eb" onclick="addEl('p')">T Текст</button>
+  <button class="eb" onclick="addEl('h2')">H Заголовок</button><div class="esep"></div>
+  <button class="eb" onclick="addEl('rect')">▭ Блок</button>
+  <button class="eb" onclick="addEl('circle')">◯ Круг</button>
+  <button class="eb" onclick="addEl('line')">— Линия</button><div class="esep"></div>
+  <button class="eb" onclick="trigImg()">🖼 Фото</button>
+  <input type="file" id="elimg" accept="image/*" style="display:none" onchange="addImgEl(event)"><div class="esep"></div>
+  <button class="eb rd" onclick="delSel()">✕</button>
+</div>
+<div id="eprops"><div style="font-weight:700;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:9px">Свойства</div><div id="epb"></div></div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIG & STATE
+// ═══════════════════════════════════════════
+var API_MODE = localStorage.getItem('nai_mode') || 'auto'; // 'cloud', 'local', 'auto'
+var LOCAL_KEY = localStorage.getItem('nai_key') || '';
+var API_BASE = ''; // Will be set by detectMode()
+
+var conv=[], cdata={}, cniche='', curHTML='';
+var editMode=false, selEl=null, elC=0;
+var photos=[], pb64=[], siteReady=false, generating=false;
+
+function $(id){return document.getElementById(id)}
+
+// ═══════════════════════════════════════════
+// API MODE DETECTION
+// ═══════════════════════════════════════════
+function detectMode(){
+  // If we're on Vercel (not localhost), use cloud proxy
+  var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+  if(API_MODE === 'cloud' || (!isLocal && API_MODE === 'auto')){
+    API_BASE = '/api/ai';
+    updateBadge('cloud');
+    return true; // No key needed
+  }
+
+  if(LOCAL_KEY){
+    API_BASE = 'direct';
+    updateBadge('local');
+    return true;
+  }
+
+  return false; // Need setup
+}
+
+function updateBadge(mode){
+  var b=$('modeBadge');
+  if(mode==='cloud'){b.textContent='☁ CLOUD';b.className='mode-badge cloud';}
+  else{b.textContent='⚡ LOCAL';b.className='mode-badge local';}
+}
+
+// ═══════════════════════════════════════════
+// UNIFIED API CALL
+// ═══════════════════════════════════════════
+function callAPI(messages, system, maxTokens){
+  if(API_BASE === 'direct'){
+    // Direct call (local dev with API key)
+    return fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':LOCAL_KEY,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:maxTokens||1200,
+        system:system,
+        messages:messages
+      })
+    }).then(function(r){
+      return r.json().then(function(d){
+        if(!r.ok) throw new Error(d?.error?.message || 'HTTP '+r.status);
+        return (d.content && d.content[0] && d.content[0].text) || '';
+      });
+    });
+  }
+
+  // Cloud proxy call
+  return fetch(API_BASE,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({messages:messages, system:system, max_tokens:maxTokens||1200})
+  }).then(function(r){
+    return r.json().then(function(d){
+      if(!r.ok) throw new Error(d.error || 'HTTP '+r.status);
+      return d.text || '';
+    });
+  });
+}
+
+// ═══════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════
+function setStatus(on,t){$('sdot').className='sdot'+(on?' on':'');$('slbl').textContent=t}
+function scrollChat(){var b=$('cmsgs');requestAnimationFrame(function(){b.scrollTop=b.scrollHeight})}
+
+// ═══════════════════════════════════════════
+// MESSAGES
+// ═══════════════════════════════════════════
+function addMsg(role,text,opts){
+  opts=opts||{};var box=$('cmsgs');
+  var wrap=document.createElement('div');wrap.className='msg '+role;if(opts.id)wrap.id=opts.id;
+  var av=document.createElement('div');av.className='mav';av.textContent=role==='ai'?'N':'Я';
+  var bub=document.createElement('div');bub.className='mb';
+  if(opts.typing){bub.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';}
+  else{
+    text.split('\n').forEach(function(line,i){
+      if(i>0)bub.appendChild(document.createElement('br'));
+      line.split(/(\*\*[^*]+\*\*)/).forEach(function(p){
+        if(p.startsWith('**')&&p.endsWith('**')){var s=document.createElement('strong');s.textContent=p.slice(2,-2);bub.appendChild(s)}
+        else bub.appendChild(document.createTextNode(p));
+      });
+    });
+  }
+  wrap.appendChild(av);wrap.appendChild(bub);
+  if(opts.options&&opts.options.length){
+    var ow=document.createElement('div');ow.className='opts';
+    opts.options.forEach(function(o){
+      var btn=document.createElement('button');btn.className='opt';btn.textContent=o;
+      btn.onclick=function(){ow.querySelectorAll('.opt').forEach(function(c){c.classList.remove('sel');c.style.pointerEvents='none';c.style.opacity='0.5'});btn.classList.add('sel');btn.style.opacity='1';doSend(o)};
+      ow.appendChild(btn);
+    });bub.appendChild(ow);
+  }
+  if(opts.upload){
+    var up=document.createElement('div');up.className='cup';
+    up.innerHTML='<input type="file" accept="image/*" multiple><div style="font-size:22px;margin-bottom:4px">📷</div><div style="font-size:12px;font-weight:700;margin-bottom:2px">Нажмите или перетащите фото</div><div style="font-size:10px;color:var(--ink3)">До 4 фото</div><div class="pthumbs" id="pth"></div>';
+    up.querySelector('input').onchange=function(e){handlePhotos(e)};bub.appendChild(up);
+    var skip=document.createElement('button');skip.className='opt';skip.style.marginTop='8px';skip.textContent='Пропустить →';
+    skip.onclick=function(){skip.style.pointerEvents='none';skip.style.opacity='0.5';doSend('без фото')};bub.appendChild(skip);
+  }
+  box.appendChild(wrap);scrollChat();return wrap;
+}
+function removeMsg(id){var el=$(id);if(el)el.remove()}
+
+// ═══════════════════════════════════════════
+// PHOTOS — aggressive compression for Safari
+// ═══════════════════════════════════════════
+function handlePhotos(e){
+  var files=Array.from(e.target.files).slice(0,4);var thumbEl=$('pth');if(thumbEl)thumbEl.innerHTML='';photos=[];pb64=[];var loaded=0;
+  files.forEach(function(f){
+    var img=new Image(),objUrl=URL.createObjectURL(f);
+    img.onload=function(){
+      var cv=document.createElement('canvas');
+      // Compress to 512px max — much smaller payload, works in Safari
+      var MAX=512,w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX}
+      if(h>MAX){w=Math.round(w*MAX/h);h=MAX}
+      cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);
+      var du=cv.toDataURL('image/jpeg',0.6); // Lower quality for smaller size
+      photos.push(du);
+      pb64.push({data:du.split(',')[1],media_type:'image/jpeg'});
+      URL.revokeObjectURL(objUrl);
+      if(thumbEl){var th=document.createElement('img');th.src=du;th.className='pthumb';thumbEl.appendChild(th)}
+      loaded++;if(loaded===files.length)setTimeout(function(){doSend('загружено '+files.length+' фото')},600);
+    };img.src=objUrl;
+  });
+}
+
+// ═══════════════════════════════════════════
+// PARSERS & HELPERS
+// ═══════════════════════════════════════════
+function parseAIResponse(raw){
+  raw=raw.trim().replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/i,'').trim();
+  try{return JSON.parse(raw)}catch(e){}
+  var depth=0,start=-1,first=null;
+  for(var i=0;i<raw.length;i++){
+    if(raw[i]==='{'){if(depth===0)start=i;depth++}
+    else if(raw[i]==='}'){depth--;if(depth===0&&start>=0){
+      try{var obj=JSON.parse(raw.slice(start,i+1));if(obj.type==='ready')return obj;if(!first)first=obj;}catch(e){}start=-1;
+    }}
+  }
+  return first||{type:'message',text:raw.replace(/[{}"[\]]/g,'').trim()||'Попробуйте ещё раз.'};
+}
+
+function cleanConv(arr){
+  var out=[];arr.forEach(function(m){
+    if(!out.length&&m.role!=='user')return;
+    if(out.length&&out[out.length-1].role===m.role){var p=out[out.length-1];if(typeof p.content==='string')p.content+='\n'+(typeof m.content==='string'?m.content:JSON.stringify(m.content))}
+    else out.push({role:m.role,content:m.content});
+  });while(out.length&&out[out.length-1].role==='assistant')out.pop();return out.slice(-12);
+}
+
+// ═══════════════════════════════════════════
+// SYSTEM PROMPTS
+// ═══════════════════════════════════════════
+function getChatSystem(){
+  return'Ты — AI-дизайнер сайтов.\n\n⚠️ ФОРМАТ: СТРОГО ОДИН JSON. Первый символ {, последний }. Без текста до/после. ОДИН объект.\n\nТИПЫ:\n{"type":"question","text":"вопрос","options":["1","2","3"]}\n{"type":"request_photos","text":"попроси фото"}\n{"type":"ready","text":"создаю","niche":"ниша"}\n{"type":"edit","text":"что","css":"CSS"}\n{"type":"message","text":"текст"}\n\nСЦЕНАРИЙ: 1)question 2)question 3)request_photos 4)ready\nМакс 3 вопроса. После фото/отказа — СРАЗУ ready.\n'+(siteReady?'Сайт создан. Правки: type:edit.\n':'')+'Данные: '+JSON.stringify(cdata);
+}
+
+function getGenSystem(niche){
+  return'Создай premium HTML сайт для "'+niche+'".\n\nФОРМАТ: ТОЛЬКО HTML код. Первый символ <, последний >. Без markdown.\n\nДИЗАЙН:\n- @import Google Fonts в <style>. Заголовки: Playfair Display / Cormorant Garamond / DM Serif Display. Тексты: Manrope.\n- Уникальная цветовая палитра под нишу. Приглушённые природные тона.\n- Hero: полноэкранный (100vh), gradient overlay на background. Минимум текста.\n- Секции: padding 80px-120px, много воздуха и пространства.\n- Плавные анимации: IntersectionObserver для fade-in + translateY(30px) при появлении каждой секции.\n- CSS transitions на hover: scale, opacity, color. Плавный scroll-behavior:smooth.\n- Полная адаптивность через CSS Grid/Flexbox + media queries.\n- data-editable атрибут на ВСЕ редактируемые тексты.\n- Все стили в одном <style> теге. Секции в <section> тегах.\n\nНЕ ДЕЛАТЬ:\n- Секции "Почему мы" с 3 карточками и иконками\n- Lorem ipsum или шаблонные тексты\n- Перегруженные layouts\n- Яркие градиенты\n\nШАБЛОНЫ:\nРесторан: атмосферный hero→философия(1 абзац)→галерея(горизонтальный scroll)→меню-тизер→бронирование→footer\nСтоматология: чистый hero→доверие(цифры в одну строку)→услуги(grid 2-3)→доктор(фото+био)→крупный отзыв→запись→footer\nБарбершоп: тёмный hero→мастера(фото grid)→услуги и цены→галерея работ→запись→footer\nЮрист: строгий hero→экспертиза→об юристе→практики→консультация→footer\nФитнес: энергичный hero→программы→тренер→результаты→запись→footer\nСтроительство: мощный hero→портфолио(крупные фото)→процесс работы→цифры→заявка→footer\n\nПиши РЕАЛЬНЫЕ тексты из данных пользователя. Если данных мало — додумай профессионально для этой ниши.\n\nОСОБО ВАЖНО: Каждая секция должна плавно появляться при скролле. Добавь IntersectionObserver в <script> в конце body.';
+}
+
+// ═══════════════════════════════════════════
+// MAIN SEND
+// ═══════════════════════════════════════════
+function doSend(override){
+  var txt=(override!==undefined?override:$('ctxt').value).trim();
+  if(!txt||generating)return;
+  if(!detectMode()){showKeyScreen();return}
+  if(!override){$('ctxt').value='';$('ctxt').style.height='auto'}
+  if(txt!=='без фото'&&!txt.startsWith('загружено'))addMsg('user',txt);
+  $('sbtn').disabled=true;setStatus(true,'Думаю...');
+  var tid='tm'+Date.now();addMsg('ai','',{id:tid,typing:true});
+  conv.push({role:'user',content:txt});
+
+  callAPI(cleanConv(conv),getChatSystem(),1200).then(function(raw){
+    var res=parseAIResponse(raw);removeMsg(tid);conv.push({role:'assistant',content:JSON.stringify(res)});handleResponse(res,txt);
+  }).catch(function(err){removeMsg(tid);addMsg('ai','⚠️ '+err.message)}).finally(function(){setStatus(false,'Готов');$('sbtn').disabled=false});
+}
+
+function handleResponse(res,userText){
+  if(res.collected)Object.assign(cdata,res.collected);if(res.niche)cniche=res.niche;var t=res.type||'message';
+  if(t==='question'){addMsg('ai',res.text||'',{options:res.options||[]});if(userText&&userText!=='без фото'&&!userText.startsWith('загружено'))cdata['data_'+Object.keys(cdata).length]=userText;if(cniche)$('chsub').textContent=cniche}
+  else if(t==='request_photos')addMsg('ai',res.text||'Загрузите фото',{upload:true});
+  else if(t==='ready'){if(res.niche)cniche=res.niche;addMsg('ai',res.text||'✦ Создаю...');$('chsub').textContent='Создаю сайт...';showGenProgress();setStatus(true,'Генерирую...');generating=true;generateSite()}
+  else if(t==='edit'){var ss=$('ss');if(ss&&res.css){ss.textContent+='\n'+res.css;syncHTML()}addMsg('ai','✓ '+(res.text||'Готово'))}
+  else addMsg('ai',res.text||'...');
+}
+
+// ═══════════════════════════════════════════
+// GENERATION
+// ═══════════════════════════════════════════
+function showGenProgress(){
+  $('parea').innerHTML='<div class="gen-progress"><div class="gen-spinner"></div><div class="gen-title">Создаём сайт</div><div class="gen-sub">AI анализирует данные и генерирует уникальный дизайн</div><div class="gen-steps"><div class="gen-step active" id="gs1"><div class="gen-step-dot"></div>Анализ данных</div><div class="gen-step" id="gs2"><div class="gen-step-dot"></div>Подбор стиля и палитры</div><div class="gen-step" id="gs3"><div class="gen-step-dot"></div>Написание текстов</div><div class="gen-step" id="gs4"><div class="gen-step-dot"></div>Сборка и анимации</div></div></div>';
+  setTimeout(function(){var a=$('gs1'),b=$('gs2');if(a)a.className='gen-step done';if(b)b.className='gen-step active'},2500);
+  setTimeout(function(){var a=$('gs2'),b=$('gs3');if(a)a.className='gen-step done';if(b)b.className='gen-step active'},6000);
+  setTimeout(function(){var a=$('gs3'),b=$('gs4');if(a)a.className='gen-step done';if(b)b.className='gen-step active'},10000);
+}
+
+function generateSite(){
+  var ctx='Ниша: '+(cniche||'бизнес')+'\n';
+  Object.entries(cdata).forEach(function(kv){ctx+=kv[0]+': '+kv[1]+'\n'});
+
+  var userContent;
+  if(pb64.length>0){
+    userContent=[];
+    // Send max 2 photos to keep payload small
+    pb64.slice(0,2).forEach(function(ph){
+      userContent.push({type:'image',source:{type:'base64',media_type:ph.media_type,data:ph.data}});
+    });
+    userContent.push({type:'text',text:'Проанализируй фото (цвета, стиль, атмосфера) и создай сайт в этом стиле.\n\n'+ctx});
+  } else {
+    userContent='Создай premium-сайт.\n\n'+ctx;
+  }
+
+  callAPI([{role:'user',content:userContent}],getGenSystem(cniche||'бизнес'),8000).then(function(raw){
+    raw=raw.replace(/^```html\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/,'').trim();
+    var di=raw.indexOf('<!DOCTYPE');if(di<0)di=raw.indexOf('<!doctype');if(di<0)di=raw.indexOf('<html');
+    if(di>0)raw=raw.slice(di);
+    if(!raw.includes('<html')&&!raw.includes('<!DOCTYPE')){
+      if(raw.includes('<section')||raw.includes('<header'))raw='<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+(cniche||'Сайт')+'</title></head><body>'+raw+'</body></html>';
+      else throw new Error('AI не вернул HTML. Напишите "создай сайт".');
+    }
+    if(photos.length>0)raw=raw.replace(/(background(?:-image)?:\s*(?:linear-gradient\([^)]+\),\s*)?)url\(['"]?[^'")\s]+['"]?\)/i,'$1url(\''+photos[0]+'\')');
+    curHTML=raw;renderSite(raw);
+    var nm=(cniche||'site').toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');
+    $('urlbar').textContent=nm+'.neuro.site';$('editBtn').style.display='';$('saveBtn').style.display='';$('peditBtn').style.display='';
+    $('chsub').textContent='Сайт готов — пишите правки';siteReady=true;generating=false;setStatus(false,'Готов');
+    addMsg('ai','✦ **Сайт создан!**\n\n• ✎ Редактировать — кликайте на тексты\n• ⠿ Тяните секции для изменения порядка\n• Пишите в чат — применю правки через AI');
+  }).catch(function(err){generating=false;setStatus(false,'Ошибка');$('parea').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-t">Ошибка</div><div class="empty-s">'+err.message+'</div></div>';addMsg('ai','⚠️ '+err.message)});
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function renderSite(html){
+  var area=$('parea'),parser=new DOMParser(),doc=parser.parseFromString(html,'text/html');
+  var ss=document.createElement('style');ss.id='ss';
+  doc.querySelectorAll('style').forEach(function(s){ss.textContent+=s.textContent});
+  ss.textContent=ss.textContent.replace(/\bbody\b/g,'#sr').replace(/\bhtml\b/g,'#sr');
+  var old=$('ss');if(old)old.remove();document.head.appendChild(ss);
+  doc.querySelectorAll('link[rel="stylesheet"]').forEach(function(l){var h=l.getAttribute('href');if(h&&!document.querySelector('link[href="'+h+'"]')){var n=document.createElement('link');n.rel='stylesheet';n.href=h;document.head.appendChild(n)}});
+  var imp=ss.textContent.match(/@import\s+url\([^)]+\);?/g);
+  if(imp)imp.forEach(function(i){var u=i.match(/url\(['"]?([^'")\s]+)['"]?\)/);if(u&&u[1]&&!document.querySelector('link[href="'+u[1]+'"]')){var f=document.createElement('link');f.rel='stylesheet';f.href=u[1];document.head.appendChild(f)}});
+  var cont=document.createElement('div');cont.id='sr';cont.innerHTML=doc.body.innerHTML;
+  cont.querySelectorAll('script').forEach(function(s){try{var n=document.createElement('script');n.textContent=s.textContent;s.replaceWith(n)}catch(e){}});
+  area.innerHTML='';area.appendChild(cont);setTimeout(initDragDrop,200);
+}
+function syncHTML(){var c=$('sr'),ss=$('ss');if(!c)return;try{var p=new DOMParser(),d=p.parseFromString(curHTML,'text/html');d.body.innerHTML=c.innerHTML;if(ss){var s=d.querySelector('style');if(s)s.textContent=ss.textContent}curHTML=d.documentElement.outerHTML}catch(e){}}
+
+// ═══════════════════════════════════════════
+// EDIT MODE & ELEMENTS
+// ═══════════════════════════════════════════
+function toggleEdit(){
+  editMode=!editMode;var c=$('sr'),b=$('editBtn'),p=$('peditBtn'),t=$('eltb');
+  if(editMode){if(c){c.classList.add('edit-mode');c.querySelectorAll('[data-editable]').forEach(function(e){e.contentEditable='true'})}if(b){b.textContent='✓ Готово';b.className='tb green'}if(p){p.textContent='✓ Готово';p.classList.add('ea')}t.style.display='flex'}
+  else{if(c){c.classList.remove('edit-mode');c.querySelectorAll('[data-editable]').forEach(function(e){e.contentEditable='false'})}if(b){b.textContent='✎ Редактировать';b.className='tb dark'}if(p){p.textContent='✎ Редактировать';p.classList.remove('ea')}t.style.display='none';$('eprops').style.display='none';if(selEl){selEl.classList.remove('sel');selEl=null}syncHTML()}
+}
+function saveSite(){if(editMode)toggleEdit();syncHTML();var nm=(cniche||'site').toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'');var b=new Blob([curHTML],{type:'text/html;charset=utf-8'});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=nm+'.html';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)}
+
+function addEl(type){var c=$('sr');if(!c)return;var id='nel'+(++elC),el,st={p:'position:absolute;left:48px;top:60px;font-size:16px;color:#333;padding:6px;min-width:80px;z-index:200;cursor:move',h2:'position:absolute;left:48px;top:60px;font-size:36px;font-weight:700;color:#1a1a1a;padding:6px;min-width:80px;z-index:200;cursor:move',rect:'position:absolute;left:80px;top:80px;width:160px;height:80px;background:rgba(27,107,58,0.12);border:2px solid rgba(27,107,58,0.3);border-radius:8px;z-index:200;cursor:move',circle:'position:absolute;left:80px;top:80px;width:80px;height:80px;background:rgba(27,107,58,0.12);border:2px solid rgba(27,107,58,0.3);border-radius:50%;z-index:200;cursor:move',line:'position:absolute;left:48px;top:100px;width:260px;height:2px;background:#1a1a1a;z-index:200;cursor:move'};if(type==='p'){el=document.createElement('p');el.textContent='Текст'}else if(type==='h2'){el=document.createElement('h2');el.textContent='Заголовок'}else el=document.createElement('div');if(!st[type])return;el.style.cssText=st[type];el.id=id;el.setAttribute('data-nel','');makeDraggable(el);if(type==='p'||type==='h2'){el.ondblclick=function(e){e.stopPropagation();el.contentEditable='true';el.focus()};el.onblur=function(){el.contentEditable='false';syncHTML()}}el.onclick=function(e){e.stopPropagation();selectEl(el)};var tg=c.querySelector('section')||c;tg.style.position='relative';tg.appendChild(el);selectEl(el)}
+function trigImg(){$('elimg').click()}
+function addImgEl(e){var f=e.target.files[0];if(!f)return;var img=new Image(),o=URL.createObjectURL(f);img.onload=function(){var cv=document.createElement('canvas'),M=600,w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M}cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);var du=cv.toDataURL('image/jpeg',0.8);URL.revokeObjectURL(o);var c=$('sr');if(!c)return;var id='nel'+(++elC);var el=document.createElement('img');el.src=du;el.id=id;el.setAttribute('data-nel','');el.style.cssText='position:absolute;left:60px;top:60px;width:160px;height:auto;border-radius:8px;z-index:200;box-shadow:0 4px 14px rgba(0,0,0,0.08);cursor:move';makeDraggable(el);el.onclick=function(ev){ev.stopPropagation();selectEl(el)};var tg=c.querySelector('section')||c;tg.style.position='relative';tg.appendChild(el);selectEl(el)};img.src=o;e.target.value=''}
+function makeDraggable(el){el.onmousedown=function(e){if(el.contentEditable==='true')return;e.preventDefault();e.stopPropagation();var ox=el.offsetLeft,oy=el.offsetTop,sx=e.clientX,sy=e.clientY;var mm=function(v){el.style.left=(ox+v.clientX-sx)+'px';el.style.top=(oy+v.clientY-sy)+'px'};var mu=function(){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);syncHTML()};document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu)}}
+function selectEl(el){if(selEl&&selEl!==el)selEl.classList.remove('sel');selEl=el;el.classList.add('sel');showProps(el)}
+function showProps(el){$('eprops').style.display='block';var tag=el.tagName.toLowerCase(),h='';if('p h1 h2 h3'.includes(tag))h+='<label>Размер</label><input type="range" min="10" max="100" value="'+(parseInt(el.style.fontSize)||16)+'" oninput="if(selEl)selEl.style.fontSize=this.value+\'px\';syncHTML()"><label>Цвет</label><input type="color" value="'+toHex(el.style.color)+'" oninput="if(selEl)selEl.style.color=this.value;syncHTML()">';if(tag==='div')h+='<label>Фон</label><input type="color" value="'+toHex(el.style.backgroundColor||el.style.background)+'" oninput="if(selEl)selEl.style.background=this.value;syncHTML()"><label>Прозрачность</label><input type="range" min="0" max="100" value="'+Math.round((parseFloat(el.style.opacity)||1)*100)+'" oninput="if(selEl)selEl.style.opacity=this.value/100;syncHTML()"><label>Скругление</label><input type="range" min="0" max="50" value="'+(parseInt(el.style.borderRadius)||0)+'" oninput="if(selEl)selEl.style.borderRadius=this.value+\'px\';syncHTML()">';if(tag==='img')h+='<label>Ширина</label><input type="range" min="40" max="600" value="'+(parseInt(el.style.width)||160)+'" oninput="if(selEl)selEl.style.width=this.value+\'px\';syncHTML()">';h+='<button onclick="delSel()" style="margin-top:12px;width:100%;background:var(--dangerL);border:1px solid rgba(194,58,58,0.2);border-radius:6px;padding:7px;font-size:11px;color:var(--danger);cursor:pointer;font-family:var(--sans);font-weight:600">✕ Удалить</button>';$('epb').innerHTML=h}
+function delSel(){if(!selEl)return;selEl.remove();selEl=null;$('eprops').style.display='none';syncHTML()}
+function toHex(c){if(!c||c==='transparent')return'#888888';if(c.startsWith('#'))return c.length>=7?c.slice(0,7):'#888888';var m=c.match(/\d+/g);if(!m||m.length<3)return'#888888';return'#'+[m[0],m[1],m[2]].map(function(x){return parseInt(x).toString(16).padStart(2,'0')}).join('')}
+document.addEventListener('click',function(e){if(selEl&&!e.target.closest('[data-nel]')&&!e.target.closest('#eprops')){selEl.classList.remove('sel');selEl=null;$('eprops').style.display='none'}});
+
+// ═══════════════════════════════════════════
+// DRAG & DROP SECTIONS
+// ═══════════════════════════════════════════
+function initDragDrop(){var c=$('sr');if(!c)return;c.querySelectorAll('section').forEach(function(sec){if(sec.querySelector('.sdh'))return;sec.style.position='relative';var h=document.createElement('div');h.className='sdh';h.textContent='⠿';sec.insertBefore(h,sec.firstChild);sec.addEventListener('mouseenter',function(){h.style.opacity='1'});sec.addEventListener('mouseleave',function(){h.style.opacity='0'});h.addEventListener('mousedown',function(e){e.preventDefault();var ghost=sec.cloneNode(true);ghost.style.cssText='position:fixed;pointer-events:none;opacity:.35;z-index:9999;width:'+sec.offsetWidth+'px;box-shadow:0 8px 32px rgba(0,0,0,0.15);left:'+(e.clientX-sec.offsetWidth/2)+'px;top:'+(e.clientY-40)+'px;border-radius:8px;overflow:hidden';document.body.appendChild(ghost);var ph=document.createElement('div');ph.style.cssText='height:'+sec.offsetHeight+'px;background:rgba(27,107,58,0.04);border:2px dashed rgba(27,107,58,0.18);border-radius:4px';sec.parentNode.insertBefore(ph,sec);sec.style.display='none';var mm=function(v){ghost.style.left=(v.clientX-sec.offsetWidth/2)+'px';ghost.style.top=(v.clientY-40)+'px';Array.from(c.querySelectorAll('section')).forEach(function(t){if(t===sec)return;var r=t.getBoundingClientRect();if(v.clientY>r.top&&v.clientY<r.bottom){if(v.clientY<r.top+r.height/2)t.parentNode.insertBefore(ph,t);else t.parentNode.insertBefore(ph,t.nextSibling)}})};var mu=function(){ghost.remove();sec.style.display='';ph.parentNode.insertBefore(sec,ph);ph.remove();c.querySelectorAll('.sdh').forEach(function(x){x.remove()});initDragDrop();syncHTML();document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu)};document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu)})})}
+
+// ═══════════════════════════════════════════
+// KEY / SETTINGS SCREEN
+// ═══════════════════════════════════════════
+function showKeyScreen(){
+  var box=$('cmsgs');box.innerHTML='';conv=[];cdata={};cniche='';siteReady=false;
+  var isLocal=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+
+  var w=document.createElement('div');w.className='keyscreen';
+  w.innerHTML=
+    '<div class="ks-tabs">'
+    +'<div class="ks-tab'+(isLocal?'':' active')+'" onclick="switchTab(\'cloud\')">☁ Cloud (Vercel)</div>'
+    +'<div class="ks-tab'+(isLocal?' active':'')+'" onclick="switchTab(\'local\')">⚡ Local (API Key)</div>'
+    +'</div>'
+    +'<div class="ks-pane'+(isLocal?'':' active')+'" id="paneCloud">'
+    +'<div class="ks-ok"><strong>☁ Cloud режим</strong>API ключ хранится на сервере. Просто нажмите кнопку — всё работает автоматически.</div>'
+    +'<button class="ks-btn" onclick="API_MODE=\'cloud\';localStorage.setItem(\'nai_mode\',\'cloud\');startChat()">Начать →</button>'
+    +'</div>'
+    +'<div class="ks-pane'+(isLocal?' active':'')+'" id="paneLocal">'
+    +'<div class="ks-warn"><strong>⚡ Локальный режим</strong>API ключ хранится в вашем браузере. Нужен localhost.<br>Запустите: <code style="background:var(--ink);color:#C8FF00;padding:4px 8px;border-radius:4px;font-size:11px;font-family:monospace;display:inline-block;margin-top:4px">python3 -m http.server 8080</code></div>'
+    +'<div style="font-size:13px;font-weight:700;margin-bottom:5px">API-ключ Anthropic</div>'
+    +'<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">console.anthropic.com → API Keys</div>'
+    +'<input type="password" class="ks-inp" id="keyInp" placeholder="sk-ant-api03-..." value="'+LOCAL_KEY+'">'
+    +'<button class="ks-btn" id="keyBtn">Начать →</button>'
+    +'<div class="ks-note">🔒 Ключ только в вашем браузере</div>'
+    +'</div>';
+  box.appendChild(w);
+
+  setTimeout(function(){
+    var i=$('keyInp'),b=$('keyBtn');
+    if(i)i.addEventListener('keydown',function(e){if(e.key==='Enter')b.click()});
+    if(b)b.onclick=function(){var k=(i?i.value:'').trim();if(!k.startsWith('sk-')){if(i)i.style.borderColor='var(--danger)';return}LOCAL_KEY=k;localStorage.setItem('nai_key',k);API_MODE='local';localStorage.setItem('nai_mode','local');startChat()};
+  },50);
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.ks-tab').forEach(function(t,i){t.classList.toggle('active',i===(tab==='cloud'?0:1))});
+  $('paneCloud').classList.toggle('active',tab==='cloud');
+  $('paneLocal').classList.toggle('active',tab==='local');
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+function startChat(){
+  $('cmsgs').innerHTML='';conv=[];cdata={};cniche='';photos=[];pb64=[];siteReady=false;generating=false;
+  detectMode();
+  setTimeout(function(){addMsg('ai','✦ Привет! Я ваш AI-дизайнер.\n\nСоздам уникальный сайт через диалог — расскажите, какой у вас бизнес?',{options:['Ресторан / Кафе','Стоматология','Барбершоп / Салон','Юрист / Адвокат','Фитнес / Тренер','Строительство','Другое']})},250);
+}
+
+if(detectMode()) startChat(); else showKeyScreen();
+</script>
+</body>
+</html>
